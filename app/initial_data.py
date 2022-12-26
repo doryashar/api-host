@@ -28,14 +28,21 @@ logger = logging.getLogger(__name__)
 )
 async def initial():
     try:
+        logger.info(1)
         await Tortoise.init(config=TORTOISE_ORM)
+        logger.info(2)
         user = await crud.user.get_by_email(email=settings.FIRST_SUPERUSER_EMAIL)
+        logger.info(3)
         if not user:
+            
+            logger.info(4)
             user_data = schemas.UserCreateBySuperuser(
                 email=settings.FIRST_SUPERUSER_EMAIL,
                 password=settings.FIRST_SUPERUSER_PASSWORD,
                 is_superuser=True,
             )
+            
+            logger.info(5)
             await crud.user.create_by_superuser(user_data)
     except Exception as e:
         logger.error(e)

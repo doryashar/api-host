@@ -1,4 +1,5 @@
-FROM nginx/unit:1.23.0-python3.9
+FROM --platform=linux/arm64 python:3.9
+#nginx/unit:1.23.0-python3.9
 
 # Our Debian with Python and Nginx for python apps.
 # See https://hub.docker.com/r/nginx/unit/
@@ -30,12 +31,26 @@ COPY ./requirements.txt .
 COPY ./.env .
 
 # We copy our app folder to the /build
+RUN pip install -U pip
 
-RUN apt update && apt install -y python3-pip                                  \
-    && pip3 install -r requirements.txt                                       \
-    && apt remove -y python3-pip                                              \
-    && apt autoremove --purge -y                                              \
-    && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
+
+# RUN \
+#     # apt update \
+#     # && apt install -y python3-pip      \
+#     /usr/local/bin/python3 -m pip install --upgrade pip 
+
+# RUN python3 -m pip install -r requirements.txt --default-timeout=100 
+#--upgrade --default-timeout=100 
+#--use-deprecated=legacy-resolver
+#--no-cache-dir
+
+RUN pip install -r requirements.txt --default-timeout=100 --no-cache-dir
+# --use-deprecated=legacy-resolver
+
+# RUN apt remove -y python3-pip                  \
+    # && apt autoremove --purge -y                  \
+    # && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
+
 
 # OK, that looks strange but here's a explanation from Nginx docs
 # https://unit.nginx.org/howto/docker/:
@@ -44,3 +59,5 @@ RUN apt update && apt install -y python3-pip                                  \
 # Next, we install the requirements, remove PIP, and perform image cleanup. """
 
 # Note we use /build/requirements.txt since this is our file
+# RUN ["chmod", "+x", "./app/initial.sh"]
+ENTRYPOINT ["sh", "/docker-entrypoint.d/initial.sh"]
